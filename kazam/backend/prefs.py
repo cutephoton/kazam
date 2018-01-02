@@ -49,6 +49,8 @@ class Prefs():
         #
         # GUI preferences and stuff
         #
+        self.last_mode = "MAIN_SCREENCAST"
+
         self.capture_cursor = False
         self.capture_speakers = False
         self.capture_microphone = False
@@ -211,6 +213,8 @@ class Prefs():
             self.countdown_timer = 10
         self.framerate = float(self.config.get("main", "framerate"))
 
+        self.last_mode = self.config.get("main", "last_mode")
+
         self.capture_cursor = self.config.getboolean("main", "capture_cursor")
         self.capture_microphone = self.config.getboolean("main", "capture_microphone")
         self.capture_speakers = self.config.getboolean("main", "capture_speakers")
@@ -257,6 +261,8 @@ class Prefs():
             self.codec = int(self.config.get("main", "codec"))
 
     def save_config(self):
+        self.config.set("main", "last_mode", self.last_mode)
+
         self.config.set("main", "capture_cursor", self.capture_cursor)
         self.config.set("main", "capture_speakers", self.capture_speakers)
         self.config.set("main", "capture_microphone", self.capture_microphone)

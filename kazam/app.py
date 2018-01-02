@@ -287,6 +287,8 @@ class KazamApp(GObject.GObject):
         self.restore_UI()
 
         HW.get_current_screen(self.window)
+        #self.set_mode(prefs.last_mode)
+        self.set_default_mode()
         self.startup = False
 
     #
@@ -299,14 +301,17 @@ class KazamApp(GObject.GObject):
 
     def cb_main_toggled(self, widget):
         name = widget.get_name()
-        if name == "MAIN_SCREENCAST" and widget.get_active():
-            logger.debug("Main toggled: {0}".format(name))
+        if widget.get_active():
+            self.set_mode(name)
+
+    def set_mode (self, mode, setToggle=False):
+        logger.debug("Mode toggled: {0}".format(mode))
+
+        if mode == "MAIN_SCREENCAST":
             self.main_mode = MODE_SCREENCAST
             self.ntb_main.set_current_page(0)
             self.indicator.menuitem_start.set_label(_("Start recording"))
-
-        elif name == "MAIN_SCREENSHOT" and widget.get_active():
-            logger.debug("Main toggled: {0}".format(name))
+        elif mode == "MAIN_SCREENSHOT":
             self.main_mode = MODE_SCREENSHOT
             self.ntb_main.set_current_page(1)
             if self.record_mode == MODE_WIN:
@@ -316,7 +321,14 @@ class KazamApp(GObject.GObject):
                 self.chk_borders_pic.set_sensitive(True)
             else:
                 self.chk_borders_pic.set_sensitive(False)
-
+        prefs.last_mode = mode
+    def set_default_mode (self):
+        if prefs.last_mode == "MAIN_SCREENCAST":
+            self.btn_shot.set_active(False)
+            self.btn_cast.set_active(True)
+        elif prefs.last_mode == "MAIN_SCREENSHOT":
+            self.btn_cast.set_active(False)
+            self.btn_shot.set_active(True)
     #
     # Record mode toggles
     #

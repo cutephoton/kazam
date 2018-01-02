@@ -60,6 +60,7 @@ class KazamConfig(ConfigParser):
                          "autosave_picture_file":  "Kazam_screenshot",
                          "shutter_sound":          "True",
                          "shutter_type":           "0",
+                         "last_mode":              "MAIN_SCREENCAST",
                          "first_run":              "True",
                          },
                 },
