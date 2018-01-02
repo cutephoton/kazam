@@ -284,6 +284,9 @@ class KazamApp(GObject.GObject):
                         """  SUPER-CTRL-Q to quit.\n"""
                         )
 
+        # Clipboard feature
+        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+
         self.restore_UI()
 
         HW.get_current_screen(self.window)
@@ -631,6 +634,9 @@ class KazamApp(GObject.GObject):
             self.indicator.menuitem_finish.set_sensitive(False)
             self.indicator.menuitem_quit.set_sensitive(True)
 
+            if prefs.capture_clipboard_pic:
+                self.clipboard.set_image(self.grabber.pixbuf)
+
             if prefs.autosave_picture:
                 fname = get_next_filename(prefs.autosave_picture_dir,
                                           prefs.autosave_picture_file,
@@ -706,6 +712,10 @@ class KazamApp(GObject.GObject):
     def cb_check_cursor_pic(self, widget):
         prefs.capture_cursor_pic = widget.get_active()
         logger.debug("Capture cursor_pic: {0}.".format(prefs.capture_cursor_pic))
+
+    def cb_check_clipboard(self, widget):
+        prefs.capture_clipboard_pic = widget.get_active()
+        logger.debug("Capture to clipboard: {0}.".format(prefs.capture_clipboard_pic))
 
     def cb_check_borders_pic(self, widget):
         prefs.capture_borders_pic = widget.get_active()
@@ -832,6 +842,7 @@ class KazamApp(GObject.GObject):
         self.chk_speakers.set_active(prefs.capture_speakers)
         self.chk_microphone.set_active(prefs.capture_microphone)
         self.chk_cursor_pic.set_active(prefs.capture_cursor_pic)
+        self.chk_clipboard.set_active(prefs.capture_clipboard_pic)
         self.chk_borders_pic.set_active(prefs.capture_borders_pic)
         self.spinbutton_delay.set_value(prefs.countdown_timer)
 

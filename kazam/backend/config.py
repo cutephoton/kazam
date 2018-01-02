@@ -44,6 +44,7 @@ class KazamConfig(ConfigParser):
                          "capture_speakers":      "False",
                          "capture_cursor_pic":    "True",
                          "capture_borders_pic":   "True",
+                         "capture_clipboard_pic": "False",
                          "framerate":             "15",
                          "countdown_splash":      "True",
                          "last_x":                "60",
@@ -130,5 +131,3 @@ class KazamConfig(ConfigParser):
         file_ = open(self.CONFIGFILE, "w")
         ConfigParser.write(self, file_)
         file_.close()
-
-
