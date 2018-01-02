@@ -239,7 +239,6 @@
                     <property name="height">1</property>
                   </packing>
                 </child>
-
                 <child>
                   <object class="GtkCheckButton" id="chk_clipboard">
                     <property name="label" translatable="yes">Save to clipboard</property>
@@ -253,6 +252,23 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">2</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="chk_clipboard_skipsave">
+                    <property name="label" translatable="yes">Don't save to disk (clipboard only)</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="xalign">0</property>
+                    <property name="draw_indicator">True</property>
+                    <signal name="toggled" handler="cb_check_clipboard_skipsave" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">3</property>
                     <property name="width">1</property>
                     <property name="height">1</property>
                   </packing>

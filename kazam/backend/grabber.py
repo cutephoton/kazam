@@ -41,9 +41,15 @@ class Grabber(GObject.GObject):
                              (),),
         }
 
+    SAVE_FLAGS_FILE         = (1<<0)
+    SAVE_FLAGS_FILE_AUTO    = (1<<1)
+    SAVE_FLAGS_CLIPBOARD    = (1<<2)
+
     def __init__(self):
         GObject.GObject.__init__(self)
         logger.debug("Starting Grabber.")
+        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        #self.old_path = None
 
 
     def setup_sources(self, video_source, area, xid, active = False, god = False):
@@ -162,25 +168,39 @@ class Grabber(GObject.GObject):
 
         self.emit("flush-done")
 
+    def save_to_clipboard(self):
+        if self.pixbuf is not None:
+            logging.debug("Clipboard: Setting clipboard.")
+            self.clipboard.set_image(self.pixbuf)
+
     def save(self, filename):
         if self.pixbuf is not None:
             self.pixbuf.savev(filename, "png", "", "")
 
-    def save_capture(self, old_path):
-        logger.debug("Saving screenshot.")
-        self.old_path = old_path
-        (dialog, result, self.old_path) = SaveDialog(_("Save capture"),
-                                                     self.old_path, None, main_mode=MODE_SCREENSHOT)
+    def save_capture(self, filename, flags=0):
+        logger.debug("Saving screenshot. (orig='{}' flags=0x{:x})".format(filename, flags))
 
-        if result == Gtk.ResponseType.OK:
-            uri = os.path.join(dialog.get_current_folder(), dialog.get_filename())
+        if ((flags & self.SAVE_FLAGS_CLIPBOARD) == self.SAVE_FLAGS_CLIPBOARD):
+            self.save_to_clipboard()
 
-            self.save(uri)
+        if ((flags & self.SAVE_FLAGS_FILE) == self.SAVE_FLAGS_FILE):
+            # If automatic flag is not set, prompt user for filename
+            if ((flags & self.SAVE_FLAGS_FILE_AUTO) != self.SAVE_FLAGS_FILE_AUTO):
+                #self.old_path = filename
+                (dialog, result, filename) = SaveDialog(_("Save capture"),
+                                                             filename, None, main_mode=MODE_SCREENSHOT)
 
-        dialog.destroy()
-        self.emit("save-done", self.old_path)
+                if result == Gtk.ResponseType.OK:
+                    filename = os.path.join(dialog.get_current_folder(), dialog.get_filename())
+                    logger.debug("User selected path: {}".format(uri))
+                else:
+                    filename = None
+                dialog.destroy()
+            # If user provided a real path, save image (otherwise skip)
+            self.save(filename)
+            if ((flags & self.SAVE_FLAGS_FILE_AUTO) == self.SAVE_FLAGS_FILE_AUTO):
+                filename = None # don't update old path
+        else:
+            logger.debug("Capture: Skipped saving to disk. (Clipboard option)")
 
-    def autosave(self, filename):
-        logger.debug("Autosaving to: {0}".format(filename))
-        self.save(filename)
         self.emit("save-done", filename)

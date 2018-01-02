@@ -45,6 +45,7 @@ class KazamConfig(ConfigParser):
                          "capture_cursor_pic":    "True",
                          "capture_borders_pic":   "True",
                          "capture_clipboard_pic": "False",
+                         "capture_clipboard_only":"False",
                          "framerate":             "15",
                          "countdown_splash":      "True",
                          "last_x":                "60",

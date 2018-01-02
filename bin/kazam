@@ -147,6 +147,9 @@ if __name__ == "__main__":
                 app = KazamApp(datadir, dist, args.debug, args.test, args.nosound, args.silent)
 
                 kazam_service = KazamService(app)
+    # handle CTRL+C
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     Gtk.main()
     logger.debug("Finishing ...")

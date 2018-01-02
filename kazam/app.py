@@ -284,9 +284,6 @@ class KazamApp(GObject.GObject):
                         """  SUPER-CTRL-Q to quit.\n"""
                         )
 
-        # Clipboard feature
-        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-
         self.restore_UI()
 
         HW.get_current_screen(self.window)
@@ -634,16 +631,20 @@ class KazamApp(GObject.GObject):
             self.indicator.menuitem_finish.set_sensitive(False)
             self.indicator.menuitem_quit.set_sensitive(True)
 
-            if prefs.capture_clipboard_pic:
-                self.clipboard.set_image(self.grabber.pixbuf)
+            flags = self.grabber.SAVE_FLAGS_FILE
+            filename = self.old_pic_path
 
             if prefs.autosave_picture:
-                fname = get_next_filename(prefs.autosave_picture_dir,
-                                          prefs.autosave_picture_file,
-                                          ".png")
-                self.grabber.autosave(fname)
-            else:
-                self.grabber.save_capture(self.old_pic_path)
+                flags |= self.grabber.SAVE_FLAGS_FILE_AUTO
+                filename = get_next_filename(prefs.autosave_picture_dir,
+                                             prefs.autosave_picture_file,
+                                             ".png")
+            if prefs.capture_clipboard_pic:
+                flags |= self.grabber.SAVE_FLAGS_CLIPBOARD
+                if prefs.capture_clipboard_only:
+                    flags &= ~self.grabber.SAVE_FLAGS_FILE
+
+            self.grabber.save_capture(filename, flags)
 
     def cb_pause_request(self, widget):
         logger.debug("Pause requested.")
@@ -656,11 +657,12 @@ class KazamApp(GObject.GObject):
         self.recorder.unpause_recording()
 
     def cb_save_done(self, widget, result):
-        logger.debug("Save Done, result: {0}".format(result))
+        logger.debug("Save Done, result: {0}".format(result if result is not None else "<no file>"))
         if self.main_mode == MODE_SCREENCAST:
             self.old_vid_path = result
         else:
-            self.old_pic_path = result
+            if result is not None:
+                self.old_pic_path = result
 
         self.window.set_sensitive(True)
         self.window.show_all()
@@ -716,6 +718,11 @@ class KazamApp(GObject.GObject):
     def cb_check_clipboard(self, widget):
         prefs.capture_clipboard_pic = widget.get_active()
         logger.debug("Capture to clipboard: {0}.".format(prefs.capture_clipboard_pic))
+        self.chk_clipboard_skipsave.set_sensitive(prefs.capture_clipboard_pic)
+
+    def cb_check_clipboard_skipsave(self, widget):
+        prefs.capture_clipboard_only = widget.get_active()
+        logger.debug("Capture to clipboard only (skip save option): {0}.".format(prefs.capture_clipboard_only))
 
     def cb_check_borders_pic(self, widget):
         prefs.capture_borders_pic = widget.get_active()
@@ -843,6 +850,8 @@ class KazamApp(GObject.GObject):
         self.chk_microphone.set_active(prefs.capture_microphone)
         self.chk_cursor_pic.set_active(prefs.capture_cursor_pic)
         self.chk_clipboard.set_active(prefs.capture_clipboard_pic)
+        self.chk_clipboard_skipsave.set_active(prefs.capture_clipboard_only)
+        self.chk_clipboard_skipsave.set_sensitive(prefs.capture_clipboard_pic)
         self.chk_borders_pic.set_active(prefs.capture_borders_pic)
         self.spinbutton_delay.set_value(prefs.countdown_timer)
 
