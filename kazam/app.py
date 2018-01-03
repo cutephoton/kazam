@@ -646,6 +646,9 @@ class KazamApp(GObject.GObject):
             flags = self.grabber.SAVE_FLAGS_FILE
             filename = self.old_pic_path
 
+            if prefs.capture_editor:
+                flags |= self.grabber.SAVE_FLAGS_EDIT_FIRST
+
             if prefs.autosave_picture:
                 flags |= self.grabber.SAVE_FLAGS_FILE_AUTO
                 filename = get_next_filename(prefs.autosave_picture_dir,
@@ -726,6 +729,10 @@ class KazamApp(GObject.GObject):
     def cb_check_cursor_pic(self, widget):
         prefs.capture_cursor_pic = widget.get_active()
         logger.debug("Capture cursor_pic: {0}.".format(prefs.capture_cursor_pic))
+
+    def cb_check_editor(self, widget):
+        prefs.capture_editor = widget.get_active()
+        logger.debug("Capture editor: {0}.".format(prefs.capture_editor))
 
     def cb_check_clipboard(self, widget):
         prefs.capture_clipboard_pic = widget.get_active()
@@ -866,6 +873,7 @@ class KazamApp(GObject.GObject):
         self.chk_clipboard_skipsave.set_sensitive(prefs.capture_clipboard_pic)
         self.chk_borders_pic.set_active(prefs.capture_borders_pic)
         self.spinbutton_delay.set_value(prefs.countdown_timer)
+        self.chk_editor.set_active(prefs.capture_editor)
 
         #
         # Turn off the combined screen icon if we don't have more than one screen.

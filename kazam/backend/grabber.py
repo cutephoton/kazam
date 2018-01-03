@@ -29,6 +29,7 @@ from gi.repository import GObject, Gtk, Gdk, GdkPixbuf, GdkX11
 
 from kazam.backend.prefs import *
 from kazam.frontend.save_dialog import SaveDialog
+from kazam.frontend.editor import EditorDialog
 from gettext import gettext as _
 
 class Grabber(GObject.GObject):
@@ -44,6 +45,8 @@ class Grabber(GObject.GObject):
     SAVE_FLAGS_FILE         = (1<<0)
     SAVE_FLAGS_FILE_AUTO    = (1<<1)
     SAVE_FLAGS_CLIPBOARD    = (1<<2)
+    SAVE_FLAGS_EDITOR       = (1<<3)
+    SAVE_FLAGS_EDIT_FIRST   = (1<<4)
 
     def __init__(self):
         GObject.GObject.__init__(self)
@@ -180,6 +183,19 @@ class Grabber(GObject.GObject):
     def save_capture(self, filename, flags=0):
         logger.debug("Saving screenshot. (orig='{}' flags=0x{:x})".format(filename, flags))
 
+        if self.pixbuf is not None and (flags&self.SAVE_FLAGS_EDIT_FIRST) == self.SAVE_FLAGS_EDIT_FIRST:
+            editor = EditorDialog(self.pixbuf)
+            r = editor.open()
+            if r == Gtk.ResponseType.OK:
+                logger.debug("Editor: Image accepted/cropped by user...")
+                self.pixbuf = editor.screenPixbufResult
+                editor.destroy()
+            else:
+                logger.debug("Editor: Image rejected by user...")
+                editor.destroy()
+                self.emit("save-done", None)
+                return
+
         if ((flags & self.SAVE_FLAGS_CLIPBOARD) == self.SAVE_FLAGS_CLIPBOARD):
             self.save_to_clipboard()
 
@@ -202,5 +218,6 @@ class Grabber(GObject.GObject):
                 filename = None # don't update old path
         else:
             logger.debug("Capture: Skipped saving to disk. (Clipboard option)")
+            filename = None
 
         self.emit("save-done", filename)
